@@ -1,0 +1,23 @@
+#' The differential gene expression table of limma output.
+#'
+#' A dataset containing the output of differential expression of 11,678 mouse genes assessed at embryonic day E10.5 compared to E9.5 of developing telnecephalon tissue.
+#' Rownames are ENSEMBL identifiers of genes
+#'
+#' @docType data
+#'
+#' @usage data(pvalue)
+#'
+#' @format A data frame with 11678 rows and 8 variables:
+#' \describe{
+#'   \item{logFC}{Log-fold change of a gene between comapred groups}
+#'   \item{AveExpr}{Average expression of a gene across all groups}
+#'   \item{t}{t-statistics}
+#'   \item{P.Value}{P-value expression change of a gene between comapred groups}
+#'   \item{adj.P.Val}{Adjusted p-value after multiple hypothesis testing using FDR method}
+#'   \item{B}{B-statistics}
+#'   \item{gene}{Gene symbol correposnding to ENSEMBL identifiers}
+#'   \item{genename}{Gene name correposnding to ENSEMBL identifiers}
+#' }
+#'
+#' @source \url{https://doi.org/10.1016/j.pneurobio.2019.101735}
+"pvalue"

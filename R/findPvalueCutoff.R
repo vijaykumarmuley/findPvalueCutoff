@@ -40,5 +40,5 @@ findPvalueCutoff <- function(x = NULL, thresholds=NULL, range = c(0,1), interval
     fdr <- t(fdr)
     fdr[is.na(fdr)] <- 0
     fdr[is.nan(fdr)] <- 0
-    colMeans(fdr)
+    colMeans(fdr)*100
 }
