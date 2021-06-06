@@ -30,7 +30,7 @@ Load **findPvalueCutoff** into your R workspace using following command after it
 library(findPvalueCutoff)
 ```
 
-Browse **findPvalueCutoff** documentation using following command and follow instruction on how to estimate p-value cutoff and also implementation of the permutation resampling test.
+Browse **findPvalueCutoff** documentation using following command. It has details on how to use findPvalueCutoff with demonstrated examples, and also theoretical background behind it.
 
 
 ```
