@@ -3,7 +3,7 @@
 #### P-value Cutoff Estimation to Select Differentially Expressed Genes
 
 
-**findPvalueCutoff** is intended to use with uncorrected p-values obtained from differential gene expression analysis to estimate the accurate p-value threshold to select differentially expressed genes. This data-driven approach avoids using arbitrary cutoff of 0.05 p-value, and particularly useful when thousands of genes appear differentially expressed when sample sizes are large. 
+**findPvalueCutoff** is a R package, intended to use with uncorrected p-values obtained from differential gene expression analysis to estimate the accurate p-value threshold to select differentially expressed genes. This data-driven approach avoids using arbitrary cutoff of 0.05 p-value, and particularly useful when thousands of genes appear differentially expressed when sample sizes are large. 
 
 
 
@@ -16,14 +16,14 @@ library(devtools)
 
 ```
 
-Install **findPvalueCutoff** package from the github repository as shown below.
+Copy and paste following command in R console to Install **findPvalueCutoff**
 
 ```
 devtools::install_github("vijaykumarmuley/findPvalueCutoff", build_vignettes = TRUE)
 
 ```
 
-Load **findPvalueCutoff** into your workspace:
+Load **findPvalueCutoff** into your R workspace using following command after its installation.
 
 
 ```
