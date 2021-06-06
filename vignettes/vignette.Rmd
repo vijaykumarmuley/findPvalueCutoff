@@ -1,6 +1,6 @@
 ---
 title: "findPvalueCutoff"
-shorttitle: "Select Differentially Expressed Genes At False Positive Rate Less Than Five Percent"
+shorttitle: "P-value Cutoff Estimation to Select Differentially Expressed Genes"
 author:
 - name: "Vijaykumar Yogesh Muley"
   affiliation: 
@@ -22,93 +22,118 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+
+## Color Format
+colFmt <- function(x,color) {
+  
+  outputFormat <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  
+  if(outputFormat == 'latex') {
+    ret <- paste("\\textcolor{",color,"}{",x,"}",sep="")
+  } else if(outputFormat == 'html') {
+    ret <- paste("<font color='",color,"'>",x,"</font>",sep="")
+  } else {
+    ret <- x
+  }
+
+  return(ret)
+}
+
 ```
 
 # Introduction
 
-The findPvalueCutoff package is intended to use with p-values resulting from differential gene expression analysis tools to estimate a data-driven p-value cutoff. Conventionally, adjusted p-value cutoff of 0.05 or less is used to selected differentially expressed genes. However, there is a great debate on whether 0.05 p-value cutoff should be used. Sample size of the groups compared affect the generated p-values and hence conventional p-value cutoff may not be appropriate. The advantage with using findPvalueCutoff is that the p-value cutoff is predicted based on distribution of p-values itself by randomizing their order using sophisticated simulation based permutation resampling. This data-driven approach estimates p-value cutoff where one can expected five percent false positive error rate in detecting differentially expressed genes. In the subsequent text, the details are presented on how to compute false discovery rate at various p-value cutoff, and selection of differentially expressed genes.
+Cells respond to external and internal signals by controlling expression of specific genes that process the signals and generate adaptive responses (Muley and Pathania 2017). Several experimental techniques have been developed to quantify expression of genes at genome scale. This process is often referred to as gene expression profiling or transcriptomics (Pathania and Muley 2017). The common theme of such experiments is to obtain gene expression profiles from control (normal) samples and experimental samples with specific treatment or from diseased individuals in replicates (Law et al. 2016). Then, the expression of each gene is compared between experimental and normal samples. Genes with significant expression changes in the experimental group compared to normal are more likely to be responsible for the phenotypic differences between the groups. These genes are referred to as differentially expressed genes. Such analyses are also commonly used in studying developmental time points to understand which genes are required for specific developmental time points (Muley et al. 2020). 
+
+## Differential gene expression analysis
+
+Several statistical tools have been developed to perform differential expression analysis (Rapaport et al. 2013; Robinson and Oshlack 2010; Soneson and Delorenzi 2013). These tools typically perform hypothesis significance testing under a null hypothesis that the gene has no differential expression in the compared group and assign a test p-value to a gene. The p-value is the probability of obtaining test results as extreme as the results observed when the null hypothesis is correct. A very small p-value means that such an extreme observed outcome would be very unlikely under the null hypothesis, and hence the gene has different expression in compared groups. Conventionally, the null hypothesis is rejected at p-value threshold of 0.05 or less and the gene would be considered to have significant differential expression in two groups. Since differential expression analysis involves hypothesis testing for thousands of genes, the resulting p-values need to be adjusted (corrected) for multiple hypothesis testing. Most often Benjamin and Hochberg approach is used to adjust p-values resulting from differential expression analysis (Benjamini and Hochberg 1995). Then, genes with adjusted p-value 0.05 or less are considered differentially expressed. There is a great debate on whether 0.05 p-value cutoff should be used (Amrhein and Greenland 2018) and on p-value adjustment for multiple hypothesis testing (Colquhoun 2014; Perneger 1999). Sample sizes of the compared groups affect the generated p-values and hence conventional p-value cutoff may not be appropriate. To circumvent these problems, I proposed a method which estimates the false positive error rate at the specific p-value cutoff i.e. given a p-value threshold how many genes are expected to be falsely identified as differentially expressed. 
+
+## Implementation
+
+Let’s assume that we have a vector of unadjusted p-values assigned to genes from a differential expression analysis. These original p-values can be used to create a random dataset (control experiment) by shuffling their order in a vector. Technically, it is called a permutation resample and the technique is called permutation resampling (Chihara and Hesterberg 2018). The original p-value vector and the permutation resample can be used to compute how many genes are expected to be identified as differentially expressed by chance alone at a specific p-value threshold. Let’s assume that the p-value threshold is set to 0.05. I count how many genes have 0.05 or less p-values in the original p-value vector and consider them as true positives. Then, I count how many of these true positive genes assigned p-value 0.05 or less in a permutation resample. Since these genes are assigned p-values 0.05 or less even after randomization, I consider them false positives. The ratio of false positives to true positives represents the false positive error rates i.e. the number of genes that are expected to be differentially expressed by chance alone at 0.05 p-value cutoff. To get a robust estimate, permutation resampling is repeated 10000 times to create random datasets of original p-values. This gives rise to a 10000 false positive error rate at 0.05 p-value cutoff and forms a permutation distribution. The mean of the permutation distribution is used as a representative false positive error rate at 0.05 in detecting differentially expressed genes. In practice, false positive error rates are calculated at a series of p-value cutoffs. The p-value at which error rate is five percent or less would be a good threshold to select differentially expressed genes i.e. 95 percent confidence level. I have implemented this simulation-based permutation resampling technique in the R package referred to as *findPvalueCutoff*. The advantage with using **findPvalueCutoff** is that the p-value cutoff is predicted based on distribution of p-values itself by randomizing their order. This data-driven approach avoids using arbitrary cutoff of 0.05 p-value, and particularly useful when thousands of genes appear differentially expressed when sample sizes are large. In the subsequent text, the details are presented on how to compute false discovery rate at various p-value cutoff using **findPvalueCutoff** function, and selection of differentially expressed genes.
+
 
 ## Contact
 
-For questions regarding findPvalueCutoff, contact the author at vijay.muley\@gmail.com
+For questions regarding **findPvalueCutoff**, contact the author at *vijay.muley\@gmail.com*
 
 # INSTALLATION
 
-You need devtools package to install findPvalueCutoff. This can be done by installing devtools by typing install.packages(devtools) command in R. If devtools package is already installed then you can use following command to load devtools package in current R environment.  
+You need the **devtools** package to install **findPvalueCutoff**. This can be done by installing devtools by typing `r colFmt("install.packages(devtools)",'darkgreen')` command in R. If the **devtools** package is already installed, then you can use the following command to load **devtools** package in the current R environment.  
 
 ```{r, eval=FALSE}
 library(devtools)
 
 ```
 
-Then you can copy and paste following command to install findPvalueCutoff package from github repository.
+Install **findPvalueCutoff** package from the github repository as shown below.
 
 ```{r, eval=FALSE}
 devtools::install_github("vijaykumarmuley/findPvalueCutoff", build_vignettes = TRUE)
 
 ```
 
-Once installed you can load findPvalueCutoff into your workspace:
+Load **findPvalueCutoff** into your workspace:
 
 
 ```{r, eval=TRUE}
 library(findPvalueCutoff)
 ```
 
-
-Note that this command has to be run every time you restart R in order to be able to use the
-package. To get immediate help on findPvalueCutoff, type:
+Note that this command must be run every time you restart R in order to be able to use the
+package. To get immediate help on **findPvalueCutoff**, type:
 
 
 ```{r}
 ?findPvalueCutoff
 ```
 
-findPvalueCutoff function needs a vector of uncorrected p-values resulting from differential gene expression analysis tools. Some parameters need to be adjusted and details are giving below. 
+
+**findPvalueCutoff** function needs a vector of uncorrected p-values resulting from differential gene expression analysis tools. Some parameters need to be adjusted and details are given below. 
 
 # Estimating false positive rates at various p-value cutoffs
 
-I will use example data provided with the package, which contains output similar to generated by differential gene expression analysis tools such as limma, edgeR or DEGseq. The following command will load the data which is a data.frame named pvalue
+I will use example data of differential expression provided with the package, which was obtained from my previous published work (Muley et al. 2020).  It contains output typically generated by differential gene expression analysis tools such as limma, edgeR or DESeq (Rapaport et al. 2013; Soneson and Delorenzi 2013). The following command will load the data which is a `r colFmt("data.frame",'darkgreen')` named `r colFmt("pvalue",'darkblue')`.
 
 
 ```{r}
 data(pvalue)
 ```
 
-
 To check first few lines of the data, you can type following commands
-
 
 ```{r}
 head(pvalue)
 ```
 
-There are two ways to run findPvalueCutoff. 1) use a vector of predefined p-value cutoffs (manually selected set) or 2) set a lower and upper range and choose a interval so that this function generates a series of p-value cutoffs from lower to upper bound by incrementing lower bound with desired number that provided using interval parameter. I have given examples of both ways below.
+There are two ways to run **findPvalueCutoff**. 1) use a vector of predefined p-value cutoffs (manually selected set) or 2) set a lower and upper range and choose an interval so that this function generates a series of p-value cutoffs from lower to upper bound by incrementing lower bound with desired number that provided using interval parameter. I demonstrated both ways with example data below.
 
 ## Using predefined p-value thresholds
 
-findPvalueCutoff function generates random samples of the input p-values. Hence, the output would be little bit different with each run on the same data. Therefore, I first set a seed to a random number using set.seed function to reproduce the same results. Then I run findPvalueCutoff by setting 
+**findPvalueCutoff** function generates random samples of the input p-values. Hence, the output would be a little bit different with each run on the same data. Therefore, I first set a seed to a random number using the `r colFmt("set.seed",'darkgreen')` function to reproduce the same results. Then I run **findPvalueCutoff** by setting up:
 
-1. x paramater to differential expression values from the column P.Value in the pvalue data.frame, 
-2. thresholds parameter to manually selected p-value cutoffs at which I would like to compute false positive rates, 
-3. nsims parameter to 100 to create 100 randomized datasets from the given p-values
+1. `r colFmt("x",'darkred')` paramater to differential expression values from the column *P.Value* in the `r colFmt("pvalue",'darkblue')` data.frame, 
+2. `r colFmt("thresholds",'darkred')` parameter to manually selected p-value cutoffs at which I would like to compute false positive rates, 
+3. `r colFmt("nsims",'darkred')` parameter to 100 to create 100 randomized datasets from the given p-values
 
-nsims should be set to at least 1000 when performing analysis using real data. The recommended value is 10000 for accurate results.
+In practice, I recommend setting `r colFmt("nsims",'darkred')` value to at least 1000, and best would be to set 10000 for accurate results.
 
-After setting these parameters, I run findPvalueCutoff function and store the output in fdr object.
+After setting these parameters, I run **findPvalueCutoff** function and store its output in `r colFmt("fdr",'darkblue')` object.
 
 ```{r}
 set.seed(1979)
 fdr <- findPvalueCutoff(x = pvalue$P.Value, thresholds = c(0.0001, 0.001, 0.01, 0.1, 0.15, 0.2), nsims = 100)
 ```
 
-As shown below fdr object is a numeric vector containing false positive rates in percentages computed at a given series of p-value cutoffs, which are names of the elements in the fdr object. For instance, approximately 5 percent of the differentially expressed genes are likely to be falsly detected by chance along at the p-value cutoff of 0.01.
+As shown below the `r colFmt("fdr",'darkblue')` object is a numeric vector containing false positive rates in percentages computed at a given series of p-value cutoffs, which are names of the elements in the `r colFmt("fdr",'darkblue')` object. For instance, approximately 5 percent of the differentially expressed genes are likely to be falsely detected by chance alone at the p-value cutoff of 0.001 i.e. 95% confidence level would be achieved in detecting differentially expressed genes if applied to the 0.001 p-value cutoff. 
 
 ```{r}
 fdr
 ```
 
-Lets compare how many genes are differentially expressed using conventional cutoff of 0.05 after adjusted p-values, and the 0.001 cutoff on unadjusted pvalues suggested by findPvalueCutoff function.
+Let’s compare how many genes are differentially expressed using conventional cutoff of 0.05 after adjusted p-values, and the 0.001 cutoff on unadjusted p-values suggested by **findPvalueCutoff** function.
 
 ```{r}
 sum(pvalue$adj.P.Val<=0.05)
@@ -116,41 +141,65 @@ sum(pvalue$P.Value<=0.001)
 
 ```
 
-As shown above, `r sum(pvalue$adj.P.Val<=0.05)` genes were identified as differentially expressed using conventional p-value cutoff, while only `r sum(pvalue$P.Value<=0.001)` genes are differentially expressed according to p-value cutoff estimated by findPvalueCutoff function. The expected detection error rate at this cutoff is close to five percent of the total identified genes. 
+As shown above, `r sum(pvalue$adj.P.Val<=0.05)` genes were identified as differentially expressed using conventional p-value cutoff, while only `r sum(pvalue$P.Value<=0.001)` genes are differentially expressed according to p-value cutoff estimated by **findPvalueCutoff** function. The expected detection error rate at this cutoff is close to five percent of the total identified genes. 
 
 
-These results can be ploted as follow, and can be saved later use.
+These results can be plotted as follows and can be saved for later use.
 
-```{r, fig.cap = "False positive error rates predicted from random datasets according to the uncorrected differential expression p-values. The false positive error rate represents the ratio of the number of significant p-values from the randomized dataset (control experiment) to the number of significant p-values from the real dataset below a certain p-value. False positive error rate is close to 5 percent at p-value cutoff of 0.01."}
+```{r, fig.cap = "False positive error rates predicted from random datasets according to the uncorrected differential expression p-values. The false positive error rate represents the ratio of the number of significant p-values from the randomized dataset (control experiment) to the number of significant p-values from the real dataset below a certain p-value. False positive error rate is close to 5 percent at p-value cutoff of 0.001."}
 barplot(fdr, names = names(fdr), col =  "black", border = "white", xlab = "P-value cutoff", ylab = "False Positive Rate (in percent)")
 ```
 
-The plot shows false positive rate is close to five at 0.001 p-value cutoff. This should be used for selecting differentially expressed genes.
+The plot shows the false positive rate is close to five at 0.001 p-value cutoff. This should be used for selecting differentially expressed genes.
 
-## Using a range of pvalues at specific interval
+## Using a range of p-values at specific interval
 
-findPvalueCutoff provide two more parameters to quickly get an idea about false positive rates at a series of p-value cutoff. This can be done by running it with following parameters. 
+**findPvalueCutoff** provide two more parameters to quickly get an idea about false positive rates at a series of p-value cutoffs. This can be done by running with following parameters. 
 
-It is also possible to provide a range of p-values with an interval to get an idea of p-value cutoff where it is more likely to find false positive rate as low as possible. To do that, you can choose a lower and upper bound of the p-value cutoff, and increment lower bound by a interval to get a series of p-value cutoffs within those bounds. Here I choose p-values lower bound of 0 to upper bound of 0.2, and increment by 0.02.
+1. `r colFmt("x",'darkred')` paramater to differential expression values from the column *P.Value* in the `r colFmt("pvalue",'darkblue')` data.frame, 
+2. `r colFmt("range",'darkred')` parameter to provide a lower and upper bound of the p-values, 
+3. `r colFmt("interval",'darkred')` parameter to a number to increment lower bound of the p-value progressively until upper bound provided with `r colFmt("range",'darkred')` parameter,
+4. `r colFmt("nsims",'darkred')` parameter to 100 to create 100 randomized datasets from the given p-values
 
-1. x paramater to differential expression values from the column P.Value in the pvalue data.frame, 
-2. range parameter to provide a lower and upper bound of the p-values, 
-3. interval parameter to a number to increment lower bound of the p-value progressively until upper bound provided with range parameter,
-4. nsims parameter to 100 to create 100 randomized datasets from the given p-values
-
-In this example, I set range between 0 to 0.2 with interval 0.02, and excute the function as shown below,
+In this example, I set `r colFmt("range",'darkred')` between 0 to 0.2 with `r colFmt("interval",'darkred')` 0.02, and execute the function as shown below,
 
 ```{r}
 set.seed(1979)
 fdr <- findPvalueCutoff(x = pvalue$P.Value, range = c(0, 0.2), interval = 0.02, nsims = 100)
 ```
 
-These results can be ploted as follow
-```{r, fig.cap = "False positive error rates predicted from random datasets according to the uncorrected differential expression p-values. The false positive error rate represents the ratio of the number of significant p-values from the randomized dataset (control experiment) to the number of significant p-values from the real dataset below a certain p-value. This plot gives an idea that false positive error rate is five perent or less between p-values 0 to 0.02. One can now use p-values between this range to get more finer false positive rate and corresponding p-value cutoff."}
+These results can be plotted as follow
+```{r, fig.cap = "False positive error rates predicted from random datasets according to the uncorrected differential expression p-values. The false positive error rate represents the ratio of the number of significant p-values from the randomized dataset (control experiment) to the number of significant p-values from the real dataset below a certain p-value. This plot gives an idea that false positive error rate is five percent or less between p-values 0 to 0.02. One can now use p-values between this range to get more finer false positive rate and corresponding p-value cutoff."}
 barplot(fdr, names = names(fdr), col =  "black", border = "white", xlab = "P-value cutoff", ylab = "False Positive Rate (in percent)")
 ```
 
-Plot shows that false positive rate of 5 is estimted between the range of 0 and 0.02 p-value cutoffs. This range can be used to get more finer false positive rate and the corresponding p-values.
+Plot shows that a false positive rate of 5 is estimated between the range of 0 and 0.02 p-value cutoffs. This range can be used to get a finer false positive rate and the corresponding p-values.
+
+# References
+
+Amrhein, Valentin, and Sander Greenland. 2018. “Remove, Rather than Redefine, Statistical Significance.” Nature Human Behaviour 2 (1): 4. https://doi.org/10.1038/s41562-017-0224-0.
+
+Benjamini, Yoav, and Yosef Hochberg. 1995. “Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing.” Journal of the Royal Statistical Society: Series B (Methodological) 57 (1): 289–300. https://doi.org/10.1111/j.2517-6161.1995.tb02031.x.
+
+Chihara, Laura M., and Tim C. Hesterberg. 2018. Mathematical Statistics with Resampling and R. Mathematical Statistics with Resampling and R. Hoboken, NJ, USA: John Wiley & Sons, Inc. https://doi.org/10.1002/9781119505969.
+
+Colquhoun, David. 2014. “An Investigation of the False Discovery Rate and the Misinterpretation of P-Values.” Royal Society Open Science 1 (3): 140216. https://doi.org/10.1098/rsos.140216.
+
+Law, Charity W., Monther Alhamdoosh, Shian Su, Gordon K. Smyth, and Matthew E. Ritchie. 2016. “RNA-Seq Analysis Is Easy as 1-2-3 with Limma, Glimma and EdgeR.” F1000Research 5 (November): 1408. https://doi.org/10.12688/f1000research.9005.2.
+
+Muley, Vijaykumar Yogesh, Carlos Javier López-Victorio, Jorge Tonatiuh Ayala-Sumuano, Adriana González-Gallardo, Leopoldo González-Santos, Carlos Lozano-Flores, Gregory Wray, Maribel Hernández-Rosales, and Alfredo Varela-Echavarría. 2020. “Conserved and Divergent Expression Dynamics during Early Patterning of the Telencephalon in Mouse and Chick Embryos.” Progress in Neurobiology 186 (March). https://doi.org/10.1016/j.pneurobio.2019.101735.
+
+Muley, Vijaykumar Yogesh, and Amit Pathania. 2017. “Gene Expression.” In: Vonk J., Shackelford T. (Eds) Encyclopedia of Animal Cognition and Behavior. Springer, Cham. https://doi.org/10.1007/978-3-319-47829-6_49-2.
+
+Pathania, Amit, and Vijaykumar Yogesh Muley. 2017. “Gene Expression Profiling.” In: Vonk J., Shackelford T. (Eds) Encyclopedia of Animal Cognition and Behavior. Springer, Cham. https://doi.org/10.1007/978-3-319-47829-6_9-1.
+
+Perneger, Thomas V. 1999. “Adjusting for Multiple Testing in Studies Is Less Important than Other Concerns.” BMJ 318 (7193): 1288–1288. https://doi.org/10.1136/bmj.318.7193.1288a.
+
+Rapaport, Franck, Raya Khanin, Yupu Liang, Mono Pirun, Azra Krek, Paul Zumbo, Christopher E Mason, Nicholas D Socci, and Doron Betel. 2013. “Comprehensive Evaluation of Differential Gene Expression Analysis Methods for RNA-Seq Data.” Genome Biology 14 (9): 3158. https://doi.org/10.1186/gb-2013-14-9-r95.
+
+Robinson, Mark D, and Alicia Oshlack. 2010. “A Scaling Normalization Method for Differential Expression Analysis of RNA-Seq Data.” Genome Biology 11 (3): R25. https://doi.org/10.1186/gb-2010-11-3-r25.
+
+Soneson, Charlotte, and Mauro Delorenzi. 2013. “A Comparison of Methods for Differential Expression Analysis of RNA-Seq Data.” BMC Bioinformatics 14 (1): 91. https://doi.org/10.1186/1471-2105-14-91.
 
 
 ```{r}
