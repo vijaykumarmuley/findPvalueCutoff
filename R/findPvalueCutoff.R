@@ -1,12 +1,12 @@
 #' @title Estimates false positive rate at a series of p-value cutoffs
 #'
-#' @description Given a p-value vector, it estimates number of rejected null hypothesis at a series of p-value cutoffs
+#' @description Given a p-value vector resulting from differential gene expression analysis, this function estimates false positive error rates expected by random chance at a series of p-value cutoffs
 #'
 #' @param x A vector of p-values.
 #' @param thresholds A vector of manually selected p-value cutoffs at which false positive rate needs to be estimated.
-#' @param range Limit of lower and upper p-value cutoffs within which false positive rate will be estimated. Default when thresholds parameter is NULL.
-#' @param interval Interval used to generate a series of p-values within lower and upper bound given in range porameter.
-#' @param nsims Number of simulated (randomized) datasets. Default is 1000 but at least 10000 datasets are recommended.
+#' @param range Limit of lower and upper p-value cutoffs within which false positive rate will be estimated. Default is c(0,1) when thresholds parameter is NULL.
+#' @param interval Interval used to generate a series of p-values within lower and upper bound given in range porameter. Default is 0.05.
+#' @param nsims An integer value representing the number of simulated randomized datasets (controlled experiments) to be generated to compute false positive error rate. Default is 1000 but at least 10000 datasets are recommended.
 #' @export findPvalueCutoff
 #' @return A named (p-value cutoffs) vector with estimated false positive rate.
 #' @examples \dontrun{
