@@ -9,19 +9,29 @@
 
 # Installation
 
-The **devtools** package is required to install **findPvalueCutoff**. This can be done by installing devtools by typing *install.packages(devtools)* command in R. If the **devtools** package is already installed, then it should be loaded in the current R environment as shown below,
+Few R packages are required to install **findPvalueCutoff**.  These can be installed by executing following chunk of code in R. In principle, only **devtools** package is required to install **findPvalueCutoff**. But other packages build ready to use documentation about running and working with **findPvalueCutoff**.  
 
 ```
-library(devtools)
-
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+if (!requireNamespace("BiocStyle", quietly = TRUE))
+    BiocManager::install("BiocStyle")
+if (!requireNamespace("knitr", quietly = TRUE))
+    install.packages("knitr")
+if (!requireNamespace("rmarkdown", quietly = TRUE))
+    install.packages("rmarkdown")
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
 ```
 
-Copy and paste following command in R console to Install **findPvalueCutoff**
+Then, copy and paste following command in R console to Install **findPvalueCutoff**
 
 ```
 devtools::install_github("vijaykumarmuley/findPvalueCutoff", build_vignettes = TRUE)
 
 ```
+
+In case having trouble, try running above command by setting *build_vignettes* to FALSE. 
 
 Load **findPvalueCutoff** into your R workspace using following command after its installation.
 
