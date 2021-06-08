@@ -9,7 +9,8 @@
 
 # Installation
 
-Few R packages are required to install **findPvalueCutoff**.  These can be installed by executing following chunk of code in R. In principle, only **devtools** package is required to install **findPvalueCutoff**. But other packages build ready to use documentation about running and working with **findPvalueCutoff**.  
+Few R packages are required to install **findPvalueCutoff**.  These can be installed by executing following chunk of code in R. In principle, only **devtools** package is required to install **findPvalueCutoff**. But other packages build ready to use documentation about running and working with **findPvalueCutoff**. For Windows operating system, RTools software should be already installed. Windows users can download and install RTools from [here](https://cran.r-project.org/bin/windows/Rtools/). 
+
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
