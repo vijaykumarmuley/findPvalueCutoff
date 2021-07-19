@@ -7,7 +7,9 @@ author:
   - Instituto de Neurobiología, Universidad Nacional Autónoma de México, Querétaro, Mexico
   email: vijay.muley@gmail.com
 date: "`r Sys.Date()`"
-output: 
+output:
+    md_document:
+      variant: markdown_github
     BiocStyle::html_document:
       toc: true
       toc_depth: 2
