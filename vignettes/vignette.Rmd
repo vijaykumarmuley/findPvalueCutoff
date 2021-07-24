@@ -111,7 +111,9 @@ I will use example data of differential expression provided with the package, wh
 
 
 ```{r}
-data(pvalue)
+#data(pvalue)
+system.file('inst/extdata','pvaluevym.rds', package = 'findPvalueCutoff')
+
 ```
 
 To check first few lines of the data, you can type following commands
