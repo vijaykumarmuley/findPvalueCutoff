@@ -5,7 +5,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(pvalue)
+#' @usage data(pvaluevym)
 #'
 #' @format A data frame with 11678 rows and 8 variables:
 #' \describe{
@@ -20,4 +20,4 @@
 #' }
 #'
 #' @source \url{https://doi.org/10.1016/j.pneurobio.2019.101735}
-"pvalue"
+"pvaluevym"
